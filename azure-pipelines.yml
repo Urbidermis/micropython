@@ -1,0 +1,75 @@
+trigger:
+- main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  ESP_IDF_VERSION: 'v5.2.2'
+
+steps:
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: '3.x'
+    addToPath: true
+
+- script: |
+    sudo apt-get update
+    sudo apt-get install -y build-essential libffi-dev git pkg-config wget flex bison gperf python3-venv cmake ninja-build ccache libssl-dev dfu-util libusb-1.0-0 python-is-python3
+  displayName: 'Install required dependencies'
+
+- script: |
+    mkdir -p $HOME/esp
+    cd $HOME/esp
+    git clone -b $(ESP_IDF_VERSION) --recursive https://github.com/espressif/esp-idf.git
+    cd esp-idf
+    ./install.sh esp32,esp32s2,esp32s3
+  displayName: 'Setup ESP-IDF'
+
+- script: |
+    echo "alias get_idf='. $HOME/esp/esp-idf/export.sh'" >> ~/.bashrc
+    echo "alias python='python3'" >> ~/.bashrc
+    source ~/.bashrc
+  displayName: 'Configure .bashrc'
+
+- script: |
+    . $HOME/esp/esp-idf/export.sh
+    cd $HOME
+    git clone https://github.com/polcaballero/micropython
+  displayName: 'Clone MicroPython repository'
+
+- script: |
+    cd $HOME/micropython
+    make -C mpy-cross
+  displayName: 'Build MicroPython cross-compiler'
+
+- script: |
+    . $HOME/esp/esp-idf/export.sh
+    cd $HOME/micropython/ports/esp32
+    make submodules
+    make
+  displayName: 'Build MicroPython firmware'
+
+# - script: |
+#     cd $HOME/micropython/ports/esp32/boards
+#     cp -r GENERIC_SPIRAM/ LOLIN_D32_PRO_V2_SPIRAM/
+#     sed -i '/CONFIG_COMPILER_OPTIMIZATION_SIZE=y/a CONFIG_FLASHMODE_QIO=y\nCONFIG_ESPTOOLPY_FLASHFREQ_80M=y\nCONFIG_ESPTOOLPY_FLASHSIZE_DETECT=y\nCONFIG_ESPTOOLPY_AFTER_NORESET=y\nCONFIG_SPIRAM_MEMTEST=\nCONFIG_ESPTOOLPY_FLASHSIZE_4MB=\nCONFIG_ESPTOOLPY_FLASHSIZE_8MB=\nCONFIG_ESPTOOLPY_FLASHSIZE_16MB=y\nCONFIG_PARTITION_TABLE_CUSTOM=y\nCONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions-16MiB.csv"' LOLIN_D32_PRO_V2_SPIRAM/sdkconfig.board
+#     sed -i '/boards\/sdkconfig.spiram/a boards/LOLIN_D32_PRO_V2_SPIRAM/sdkconfig.board\nboards/sdkconfig.240mhz' LOLIN_D32_PRO_V2_SPIRAM/mpconfigboard.cmake
+#   displayName: 'Add and configure new board definition'
+
+# - script: |
+#     . $HOME/esp/esp-idf/export.sh
+#     cd $HOME/micropython/ports/esp32
+#     make submodules
+#     make BOARD=LOLIN_D32_PRO_V2_SPIRAM
+#   displayName: 'Build custom firmware'
+
+# - script: |
+#     mkdir -p $HOME/firmware
+#     mv $HOME/micropython/ports/esp32/build-LOLIN_D32_PRO_V2_SPIRAM/firmware.bin $HOME/firmware/esp32spiram-1.19.1-custom-v1.bin
+#   displayName: 'Move and rename firmware'
+
+# - script: |
+#     cd $HOME/micropython/ports/esp32
+#     make clean BOARD=LOLIN_D32_PRO_V2_SPIRAM
+#   displayName: 'Clean build environment'
