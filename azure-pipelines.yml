@@ -50,26 +50,8 @@ steps:
     make
   displayName: 'Build MicroPython firmware'
 
-# - script: |
-#     cd $HOME/micropython/ports/esp32/boards
-#     cp -r GENERIC_SPIRAM/ LOLIN_D32_PRO_V2_SPIRAM/
-#     sed -i '/CONFIG_COMPILER_OPTIMIZATION_SIZE=y/a CONFIG_FLASHMODE_QIO=y\nCONFIG_ESPTOOLPY_FLASHFREQ_80M=y\nCONFIG_ESPTOOLPY_FLASHSIZE_DETECT=y\nCONFIG_ESPTOOLPY_AFTER_NORESET=y\nCONFIG_SPIRAM_MEMTEST=\nCONFIG_ESPTOOLPY_FLASHSIZE_4MB=\nCONFIG_ESPTOOLPY_FLASHSIZE_8MB=\nCONFIG_ESPTOOLPY_FLASHSIZE_16MB=y\nCONFIG_PARTITION_TABLE_CUSTOM=y\nCONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions-16MiB.csv"' LOLIN_D32_PRO_V2_SPIRAM/sdkconfig.board
-#     sed -i '/boards\/sdkconfig.spiram/a boards/LOLIN_D32_PRO_V2_SPIRAM/sdkconfig.board\nboards/sdkconfig.240mhz' LOLIN_D32_PRO_V2_SPIRAM/mpconfigboard.cmake
-#   displayName: 'Add and configure new board definition'
-
-# - script: |
-#     . $HOME/esp/esp-idf/export.sh
-#     cd $HOME/micropython/ports/esp32
-#     make submodules
-#     make BOARD=LOLIN_D32_PRO_V2_SPIRAM
-#   displayName: 'Build custom firmware'
-
-# - script: |
-#     mkdir -p $HOME/firmware
-#     mv $HOME/micropython/ports/esp32/build-LOLIN_D32_PRO_V2_SPIRAM/firmware.bin $HOME/firmware/esp32spiram-1.19.1-custom-v1.bin
-#   displayName: 'Move and rename firmware'
-
-# - script: |
-#     cd $HOME/micropython/ports/esp32
-#     make clean BOARD=LOLIN_D32_PRO_V2_SPIRAM
-#   displayName: 'Clean build environment'
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$HOME/micropython/ports/esp32/build'
+    ArtifactName: 'MicroPythonFirmware'
+  displayName: 'Publish MicroPython firmware artifacts'
