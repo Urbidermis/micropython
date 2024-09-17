@@ -8,7 +8,7 @@
 #define MICROPY_HW_ENABLE_UART_REPL         (1)
 
 #define MICROPY_HW_I2C0_SCL                 (9)
-#define MICROPY_HW_I2C0_SDA                 (8)
+#define MICROPY_HW_I2C0_SDA                 (10)
 
 //#define MICROPY_WRAP_MP_BINARY_OP (0)
 
