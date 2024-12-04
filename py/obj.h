@@ -516,6 +516,9 @@ typedef mp_obj_t (*mp_fun_3_t)(mp_obj_t, mp_obj_t, mp_obj_t);
 typedef mp_obj_t (*mp_fun_var_t)(size_t n, const mp_obj_t *);
 // mp_fun_kw_t takes mp_map_t* (and not const mp_map_t*) to ease passing
 // this arg to mp_map_lookup().
+// Note that the mp_obj_t* array will contain all arguments, positional and keyword, with the keyword
+// ones starting at offset n, like: arg0 arg1 ... arg<n> key0 value0 key1 value1 ..., and the mp_map_t*
+// gets those same keyword arguments but as a map for convenience; see fun_builtin_var_call.
 typedef mp_obj_t (*mp_fun_kw_t)(size_t n, const mp_obj_t *, mp_map_t *);
 
 // Flags for type behaviour (mp_obj_type_t.flags)
@@ -843,6 +846,7 @@ extern const mp_obj_type_t mp_type_bound_meth;
 extern const mp_obj_type_t mp_type_property;
 extern const mp_obj_type_t mp_type_stringio;
 extern const mp_obj_type_t mp_type_bytesio;
+extern const mp_obj_type_t mp_type_ringio;
 extern const mp_obj_type_t mp_type_reversed;
 extern const mp_obj_type_t mp_type_polymorph_iter;
 #if MICROPY_ENABLE_FINALISER
@@ -1273,6 +1277,8 @@ mp_obj_t mp_seq_extract_slice(const mp_obj_t *seq, mp_bound_slice_t *indexes);
     memmove(((char *)dest) + (beg + slice_len) * (item_sz), ((char *)dest) + (end) * (item_sz), ((dest_len) + (len_adj) - ((beg) + (slice_len))) * (item_sz)); \
     memmove(((char *)dest) + (beg) * (item_sz), slice, slice_len * (item_sz));
 
+#if !MICROPY_PREVIEW_VERSION_2
+
 // Provide translation for legacy API
 #define MP_OBJ_IS_SMALL_INT mp_obj_is_small_int
 #define MP_OBJ_IS_QSTR mp_obj_is_qstr
@@ -1284,5 +1290,7 @@ mp_obj_t mp_seq_extract_slice(const mp_obj_t *seq, mp_bound_slice_t *indexes);
 #define MP_OBJ_IS_FUN mp_obj_is_fun
 #define MP_MAP_SLOT_IS_FILLED mp_map_slot_is_filled
 #define MP_SET_SLOT_IS_FILLED mp_set_slot_is_filled
+
+#endif
 
 #endif // MICROPY_INCLUDED_PY_OBJ_H
